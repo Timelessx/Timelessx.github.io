@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="tool,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="最近发现了一个Android下的非常好用的终端模拟器，之前一直用JuiceSSH也挺好用，Termux更加强大，一些基础及高级用法这篇文章讲的已经很详细了， https://www.sqlsec.com/2018/05/termux.html#toc-heading-111https://wiki.termux.com/wiki/FAQ 这里再补充一下第一篇文章没有介绍(英文wiki有介绍)的调出">
+<meta name="keywords" content="tool">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Termux-Android上的高级终端模拟器">
+<meta property="og:url" content="http://yoursite.com/2018/05/12/Termux-Android上的高级终端模拟器/index.html">
+<meta property="og:site_name" content="Timelessx">
+<meta property="og:description" content="最近发现了一个Android下的非常好用的终端模拟器，之前一直用JuiceSSH也挺好用，Termux更加强大，一些基础及高级用法这篇文章讲的已经很详细了， https://www.sqlsec.com/2018/05/termux.html#toc-heading-111https://wiki.termux.com/wiki/FAQ 这里再补充一下第一篇文章没有介绍(英文wiki有介绍)的调出">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-05-12T12:19:33.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Termux-Android上的高级终端模拟器">
+<meta name="twitter:description" content="最近发现了一个Android下的非常好用的终端模拟器，之前一直用JuiceSSH也挺好用，Termux更加强大，一些基础及高级用法这篇文章讲的已经很详细了， https://www.sqlsec.com/2018/05/termux.html#toc-heading-111https://wiki.termux.com/wiki/FAQ 这里再补充一下第一篇文章没有介绍(英文wiki有介绍)的调出">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/05/12/Termux-Android上的高级终端模拟器/">
+
+
+
+
+
+<script type="text/javascript">
+    (function () {
+        if ('') {
+            if (prompt('请输入文章密码') !== '') {
+                alert('您没有阅读权限');
+                if (history.length === 1) {
+                    window.location.href = '/';
+                } else {
+                    history.back();
+                }
+            }
+        }
+    })();
+</script>
+  <title>Termux-Android上的高级终端模拟器 | Timelessx</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Timelessx</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/12/Termux-Android上的高级终端模拟器/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="X">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Timelessx">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Termux-Android上的高级终端模拟器</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-12T20:04:28+08:00">
+                2018-05-12
+              </time>
+            
+
+            
+              <span class="post-meta-divider">|</span>
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">更新于&#58;</span>
+              
+              <time title="更新于" itemprop="dateModified" datetime="2018-05-12T20:19:33+08:00">
+                2018-05-12
+              </time>
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>最近发现了一个Android下的非常好用的终端模拟器，之前一直用JuiceSSH也挺好用，Termux更加强大，一些基础及高级用法这篇文章讲的已经很详细了，</p>
+<p><strong><a href="https://www.sqlsec.com/2018/05/termux.html#toc-heading-111" target="_blank" rel="noopener">https://www.sqlsec.com/2018/05/termux.html#toc-heading-111</a></strong><br><strong><a href="https://wiki.termux.com/wiki/FAQ" target="_blank" rel="noopener">https://wiki.termux.com/wiki/FAQ</a></strong></p>
+<p>这里再补充一下第一篇文章没有介绍(英文wiki有介绍)的调出Termux特殊按键比如ctrl、alt、tab、方向键等的方法，我们手机输入法默认布局是没有这些按键的，我们可以换用<code>Hacker&#39;s Keyboard</code>输入法，<br>同时Termux也提供了这些额外按键支持，调出方法很简单第一种按住音量加键再按Q，第二种左滑，在弹出菜单中长按左下角KEYBOARD按钮。<br>这个额外的键盘还支持自定义，创建一个这样的配置文件<code>~/.termux/termux.properties</code>，里面可以定义一些按键：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">extra-keys = [[&apos;ESC&apos;,&apos;/&apos;,&apos;-&apos;,&apos;:&apos;,&apos;UP&apos;,&apos;|&apos;,&apos;PGUP&apos;],[&apos;TAB&apos;,&apos;CTRL&apos;,&apos;ALT&apos;,&apos;LEFT&apos;,&apos;DOWN&apos;,&apos;RIGHT&apos;,&apos;PGDN&apos;]]</span><br></pre></td></tr></table></figure></p>
+<p>这样就会显示两排常用按键非常方便。</p>
+<p>手机上输入终究还是不尽人意，可以用adb端口转发将termux的ssh端口转发到电脑上，这样就可以直接在电脑上操作手机，termux安装openSSH后默认监听端口为8022，电脑连接不需要用户名密码，可以自己加个公钥方便以后连接。<br>adb端口转发也非常简单，先看adb命令帮助文档：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">forward --list           list all forward socket connections</span><br><span class="line">forward [--no-rebind] LOCAL REMOTE</span><br><span class="line">    forward socket connection using:</span><br><span class="line">      tcp:&lt;port&gt; (&lt;local&gt; may be &quot;tcp:0&quot; to pick any open port)</span><br><span class="line">      localabstract:&lt;unix domain socket name&gt;</span><br><span class="line">      localreserved:&lt;unix domain socket name&gt;</span><br><span class="line">      localfilesystem:&lt;unix domain socket name&gt;</span><br><span class="line">      dev:&lt;character device name&gt;</span><br><span class="line">      jdwp:&lt;process pid&gt; (remote only)</span><br><span class="line">forward --remove LOCAL   remove specific forward socket connection</span><br><span class="line">forward --remove-all     remove all forward socket connections</span><br><span class="line"></span><br><span class="line">reverse --list           list all reverse socket connections from device</span><br><span class="line">reverse [--no-rebind] REMOTE LOCAL</span><br><span class="line">    reverse socket connection using:</span><br><span class="line">      tcp:&lt;port&gt; (&lt;remote&gt; may be &quot;tcp:0&quot; to pick any open port)</span><br><span class="line">      localabstract:&lt;unix domain socket name&gt;</span><br><span class="line">      localreserved:&lt;unix domain socket name&gt;</span><br><span class="line">      localfilesystem:&lt;unix domain socket name&gt;</span><br><span class="line">reverse --remove REMOTE  remove specific reverse socket connection</span><br><span class="line">reverse --remove-all     remove all reverse socket connections from device</span><br></pre></td></tr></table></figure></p>
+<p>adb还支持反向端口转发，这不是本文的重点，adb端口转发使用非常简单，手机USB调试打开连接电脑，然后运行下面命令：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb forward tcp:8022 tcp:8022</span><br></pre></td></tr></table></figure></p>
+<p>这样手机8022端口就被转发到电脑8022端口，接下来再用电脑ssh连接本地8022就能连接上手机操作就很方便了。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/tool/" rel="tag"># tool</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/09/17/微信接收异常通知/" rel="next" title="微信接收异常通知">
+                <i class="fa fa-chevron-left"></i> 微信接收异常通知
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">X</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">9</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">X</span>
+
+  
+</div>
+
+<!-- 
+
+
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+ -->
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+
+  <!--  -->
+
+  <!-- 页面点击小红心 -->
+  <script type="text/javascript" src="/js/src/love.js"></script>
+
+</body>
+</html>

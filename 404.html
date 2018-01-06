@@ -1,0 +1,47 @@
+<!DOCTYPE HTML>
+
+	<head><meta name="generator" content="Hexo 3.8.0">
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>O.O</title>
+		<style type="text/css">
+			* {margin: 0; padding: 0;}
+			body {background: black;}
+			canvas {display: block;}
+		</style>
+	</head>
+	<body>
+		<canvas id="c">
+		<script type="text/javascript">
+			var c = document.getElementById("c");
+			var context = c.getContext("2d");
+			//c.width = window.screen.width
+			//c.height = window.screen.height
+			c.height = window.innerHeight;
+			c.width = window.innerWidth;
+			var str = "故事还在继续 路还很长".split("");
+			var font_size = 15;
+			var columns = c.width / font_size;
+			var drops = [];
+
+			for (var x = 0; x < columns; x++)
+				drops[x] = 1;
+
+			function draw()
+			{
+				context.fillStyle = "rgba(0, 0, 0, 0.05)";
+				context.fillRect(0, 0, c.width, c.height);
+				context.fillStyle = "#0F0";
+				context.font = font_size + "px arial";
+				for (var i = 0; i < drops.length; i++)
+				{
+					var text = str[Math.floor(Math.random() * str.length)];
+					context.fillText(text, i * font_size, drops[i] * font_size);
+					if (drops[i] * font_size > c.height && Math.random() > 0.975)
+						drops[i] = 0;
+					drops[i]++;
+				}
+			}
+			setInterval(draw, 33);
+		</script>
+	</canvas></body>
+

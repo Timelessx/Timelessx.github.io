@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="spring,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="接手了旧项目，代码看了一下引起极度不适，大面积啰里啰嗦重复无用代码，都是一些乱七八糟无关紧要的垃圾，各种层层try-catch，代码也都是一坨没有空行分割，一眼看去就找不到关键有用部分，满屏都是类似这种狗屎一样的东西  于是一怒之下就总结了本文。   首先是统一异常处理，这里主要是利用@ControllerAdvice结合@ExceptionHandler来统一捕获Controller层调用抛出的">
+<meta name="keywords" content="spring">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring统一异常处理">
+<meta property="og:url" content="http://yoursite.com/2017/03/02/Spring统一异常处理/index.html">
+<meta property="og:site_name" content="Timelessx">
+<meta property="og:description" content="接手了旧项目，代码看了一下引起极度不适，大面积啰里啰嗦重复无用代码，都是一些乱七八糟无关紧要的垃圾，各种层层try-catch，代码也都是一坨没有空行分割，一眼看去就找不到关键有用部分，满屏都是类似这种狗屎一样的东西  于是一怒之下就总结了本文。   首先是统一异常处理，这里主要是利用@ControllerAdvice结合@ExceptionHandler来统一捕获Controller层调用抛出的">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/images/shit.png">
+<meta property="og:updated_time" content="2017-03-03T09:18:20.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Spring统一异常处理">
+<meta name="twitter:description" content="接手了旧项目，代码看了一下引起极度不适，大面积啰里啰嗦重复无用代码，都是一些乱七八糟无关紧要的垃圾，各种层层try-catch，代码也都是一坨没有空行分割，一眼看去就找不到关键有用部分，满屏都是类似这种狗屎一样的东西  于是一怒之下就总结了本文。   首先是统一异常处理，这里主要是利用@ControllerAdvice结合@ExceptionHandler来统一捕获Controller层调用抛出的">
+<meta name="twitter:image" content="http://yoursite.com/images/shit.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2017/03/02/Spring统一异常处理/">
+
+
+
+
+
+<script type="text/javascript">
+    (function () {
+        if ('') {
+            if (prompt('请输入文章密码') !== '') {
+                alert('您没有阅读权限');
+                if (history.length === 1) {
+                    window.location.href = '/';
+                } else {
+                    history.back();
+                }
+            }
+        }
+    })();
+</script>
+  <title>Spring统一异常处理 | Timelessx</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Timelessx</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/03/02/Spring统一异常处理/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="X">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Timelessx">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Spring统一异常处理</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-03-02T16:22:07+08:00">
+                2017-03-02
+              </time>
+            
+
+            
+              <span class="post-meta-divider">|</span>
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">更新于&#58;</span>
+              
+              <time title="更新于" itemprop="dateModified" datetime="2017-03-03T17:18:20+08:00">
+                2017-03-03
+              </time>
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>接手了旧项目，代码看了一下引起极度不适，大面积啰里啰嗦重复无用代码，都是一些乱七八糟无关紧要的垃圾，各种层层try-catch，<br>代码也都是一坨没有空行分割，一眼看去就找不到关键有用部分，满屏都是类似这种狗屎一样的东西 <img src="/images/shit.png" alt="垃圾"></p>
+<p>于是一怒之下就总结了本文。</p>
+<hr>
+<ol>
+<li>首先是统一异常处理，这里主要是利用@ControllerAdvice结合@ExceptionHandler来统一捕获Controller层调用抛出的异常，<br>使用了此方法Controller除特殊情况Exception需单独处理外其他就不需要再各种try-catch了。<br>还是老规矩废话不多说直接上代码吧，有码有真相</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 异常统一处理</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@ControllerAdvice</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ExceptionHandlerImpl</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> RedisService redisService;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@ExceptionHandler</span>(&#123;Exception.class&#125;)</span><br><span class="line">    <span class="meta">@ResponseBody</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> ResponseWrapper <span class="title">handleException</span><span class="params">(Exception e, HttpServletRequest request)</span> </span>&#123;</span><br><span class="line">        String message = e.getMessage();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (e <span class="keyword">instanceof</span> AbortException)</span><br><span class="line">            <span class="keyword">return</span> ResponseWrapper.fail(((AbortException) e).getCode(), message);</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span> (e <span class="keyword">instanceof</span> InvalidArgumentException)</span><br><span class="line">            <span class="keyword">return</span> ResponseWrapper.fail(((InvalidArgumentException) e).getCode(), message);</span><br><span class="line">            </span><br><span class="line">        <span class="keyword">if</span> (e <span class="keyword">instanceof</span> MissingServletRequestParameterException)</span><br><span class="line">            <span class="keyword">return</span> ResponseWrapper.result(<span class="number">401</span>, <span class="string">"必要参数缺失: "</span> + ((MissingServletRequestParameterException) e).getParameterName());</span><br><span class="line">            </span><br><span class="line">        <span class="keyword">if</span> (e <span class="keyword">instanceof</span> MethodArgumentTypeMismatchException)</span><br><span class="line">            <span class="keyword">return</span> ResponseWrapper.fail(<span class="number">400</span>, String.format(<span class="string">"参数类型错误: %s=%s, 正确类型: %s"</span>, ((MethodArgumentTypeMismatchException) e).getName(), ((MethodArgumentTypeMismatchException) e).getValue(), ((MethodArgumentTypeMismatchException) e).getRequiredType().getSimpleName()));</span><br><span class="line">            </span><br><span class="line">        <span class="keyword">if</span> (e <span class="keyword">instanceof</span> NoHandlerFoundException)</span><br><span class="line">            <span class="keyword">return</span> ResponseWrapper.fail(<span class="number">404</span>, String.format(<span class="string">"接口地址错误: %s"</span>, ((NoHandlerFoundException) e).getRequestURL()));</span><br><span class="line">            </span><br><span class="line">        <span class="keyword">if</span> (e <span class="keyword">instanceof</span> HttpRequestMethodNotSupportedException)</span><br><span class="line">            <span class="keyword">return</span> ResponseWrapper.fail(<span class="number">500</span>,<span class="string">"请检查接口是get还是post"</span>);</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            StringBuilder sb = <span class="keyword">new</span> StringBuilder(<span class="number">1024</span>);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (request != <span class="keyword">null</span>) &#123;</span><br><span class="line">                Map&lt;String, ?&gt; map = request.getParameterMap();</span><br><span class="line">                sb.append(request.getRequestURI())</span><br><span class="line">                        .append(<span class="string">"\n\n"</span>);</span><br><span class="line"></span><br><span class="line">                <span class="keyword">for</span> (Map.Entry&lt;String, ?&gt; entry : map.entrySet()) &#123;</span><br><span class="line">                    sb.append(entry.getKey()).append(<span class="string">": "</span>);</span><br><span class="line">                    Object v = entry.getValue();</span><br><span class="line"></span><br><span class="line">                    <span class="keyword">if</span> (v <span class="keyword">instanceof</span> String[]) &#123;</span><br><span class="line">                        String[] values = (String[]) v;</span><br><span class="line"></span><br><span class="line">                        <span class="comment">//通常情况下参数的值只有一个</span></span><br><span class="line">                        <span class="keyword">if</span> (values.length &gt; <span class="number">0</span>)</span><br><span class="line">                            sb.append(values[<span class="number">0</span>]);</span><br><span class="line"></span><br><span class="line">                        <span class="comment">//当参数的值有多个时用逗号分隔拼接起来</span></span><br><span class="line">                        <span class="keyword">if</span> (values.length &gt; <span class="number">1</span>) &#123;</span><br><span class="line">                            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt; values.length; i++) &#123;</span><br><span class="line">                                sb.append(<span class="string">','</span>)</span><br><span class="line">                                        .append(values[i]);</span><br><span class="line">                            &#125;</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125; <span class="keyword">else</span></span><br><span class="line">                        sb.append(v);</span><br><span class="line"></span><br><span class="line">                    sb.append(<span class="string">'\n'</span>);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">//直接e.printStackTrace()会打印到System.err标准错误输出，性能影响较大,尤其是并发较大时</span></span><br><span class="line">            <span class="comment">//通过PrintWriter包装CharArrayWriter打印到字符数组内存块中，大幅提升性能</span></span><br><span class="line">            CharArrayWriter cw = <span class="keyword">new</span> CharArrayWriter(<span class="number">1024</span>);</span><br><span class="line">            PrintWriter pw = <span class="keyword">new</span> PrintWriter(cw, <span class="keyword">true</span>);</span><br><span class="line">            e.printStackTrace(pw);</span><br><span class="line">            </span><br><span class="line">            sb.append(<span class="string">'\n'</span>).append(cw.toCharArray());</span><br><span class="line">            String log = sb.toString();</span><br><span class="line">            String key = String.valueOf(System.currentTimeMillis());</span><br><span class="line">            redisService.set(key, log, <span class="number">20</span>, TimeUnit.DAYS);</span><br><span class="line"></span><br><span class="line">            StackTraceElement[] stackTrace = e.getStackTrace();</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (stackTrace != <span class="keyword">null</span> &amp;&amp; stackTrace.length &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                StackTraceElement element = stackTrace[<span class="number">0</span>];</span><br><span class="line"></span><br><span class="line">                message = element.getClassName()</span><br><span class="line">                        + <span class="string">':'</span></span><br><span class="line">                        + element.getLineNumber()</span><br><span class="line">                        + <span class="string">" "</span></span><br><span class="line">                        + element.getMethodName()</span><br><span class="line">                        + <span class="string">"() "</span> + e.toString();</span><br><span class="line">            &#125;</span><br><span class="line">            </span><br><span class="line">            <span class="keyword">if</span> (Env.dev)</span><br><span class="line">                L.d(message);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e1) &#123;</span><br><span class="line">            e1.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> ResponseWrapper.error(<span class="number">400</span>, <span class="string">"系统异常"</span>, message);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<hr>
+<ol start="2">
+<li>然后Response是包装一下，看到了各种脑残map.put()来当返回就想吐<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">ResponseWrapper</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">int</span> SUCCESS_CODE = <span class="number">200</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> code;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> T data;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> String message;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@JsonInclude</span>(JsonInclude.Include.NON_NULL)</span><br><span class="line">    <span class="keyword">private</span> String error;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@JsonInclude</span>(JsonInclude.Include.NON_NULL)</span><br><span class="line">    <span class="keyword">private</span> Map&lt;String, Object&gt; ext;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> ResponseWrapper <span class="title">success</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> ResponseWrapper(SUCCESS_CODE, <span class="string">"success"</span>, <span class="keyword">null</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> &lt;T&gt; <span class="function">ResponseWrapper <span class="title">success</span><span class="params">(T result)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> ResponseWrapper&lt;&gt;(SUCCESS_CODE, <span class="string">"success"</span>, result);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> &lt;T&gt; <span class="function">ResponseWrapper <span class="title">success</span><span class="params">(String message, T result)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> ResponseWrapper&lt;&gt;(SUCCESS_CODE, message, result);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> &lt;T&gt; <span class="function">ResponseWrapper <span class="title">success</span><span class="params">(String message, T result, Map&lt;String, Object&gt; extra)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> ResponseWrapper&lt;&gt;(SUCCESS_CODE, message, result, extra);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> ResponseWrapper <span class="title">fail</span><span class="params">(ErrorCode errorCode)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> ResponseWrapper(errorCode.getCode(), errorCode.getMessage());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> ResponseWrapper <span class="title">fail</span><span class="params">(String message)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> ResponseWrapper(<span class="number">400</span>, message);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> ResponseWrapper <span class="title">fail</span><span class="params">(<span class="keyword">int</span> code, String message)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> ResponseWrapper(code, message);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> ResponseWrapper <span class="title">error</span><span class="params">(<span class="keyword">int</span> code, String message, String error)</span> </span>&#123;</span><br><span class="line">        ResponseWrapper wrapper = <span class="keyword">new</span> ResponseWrapper(code, message);</span><br><span class="line">        wrapper.error = error;</span><br><span class="line">        <span class="keyword">return</span> wrapper;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> ResponseWrapper <span class="title">result</span><span class="params">(<span class="keyword">int</span> code, String message)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> ResponseWrapper(code, message);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> &lt;T&gt; <span class="function">ResponseWrapper <span class="title">result</span><span class="params">(<span class="keyword">int</span> code, String message, T result)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> ResponseWrapper&lt;&gt;(code, message, result);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> &lt;T&gt; <span class="function">ResponseWrapper <span class="title">result</span><span class="params">(<span class="keyword">int</span> code, String message, T result, Map&lt;String, Object&gt; extra)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> ResponseWrapper&lt;&gt;(code, message, result, extra);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ResponseWrapper</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.code = SUCCESS_CODE;</span><br><span class="line">        <span class="keyword">this</span>.message = <span class="string">"success"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ResponseWrapper</span><span class="params">(<span class="keyword">int</span> code, String message)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.code = code;</span><br><span class="line">        <span class="keyword">this</span>.message = message;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ResponseWrapper</span><span class="params">(<span class="keyword">int</span> code, String message, T data)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.code = code;</span><br><span class="line">        <span class="keyword">this</span>.message = message;</span><br><span class="line">        <span class="keyword">this</span>.data = data;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ResponseWrapper</span><span class="params">(<span class="keyword">int</span> code, String message, T data, Map&lt;String, Object&gt; ext)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.code = code;</span><br><span class="line">        <span class="keyword">this</span>.message = message;</span><br><span class="line">        <span class="keyword">this</span>.data = data;</span><br><span class="line">        <span class="keyword">this</span>.ext = ext;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getCode</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> code;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setCode</span><span class="params">(<span class="keyword">int</span> code)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.code = code;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getMessage</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> message;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setMessage</span><span class="params">(String message)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.message = message;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> T <span class="title">getData</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> data;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setData</span><span class="params">(T data)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.data = data;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getError</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> error;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setError</span><span class="params">(String error)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.error = error;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Map&lt;String, Object&gt; <span class="title">getExt</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> ext;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setExt</span><span class="params">(Map&lt;String, Object&gt; ext)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.ext = ext;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<hr>
+<p>当然，错误码也统一下<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">enum</span> ErrorCode &#123;</span><br><span class="line"></span><br><span class="line">    TOKEN_ERROR(<span class="number">400</span>, <span class="string">"Token异常"</span>),</span><br><span class="line">    RATELIMIT(<span class="number">401</span>, <span class="string">"请求频率过快"</span>),</span><br><span class="line">    SYSTEM_ERROR(<span class="number">500</span>, <span class="string">"系统错误"</span>),</span><br><span class="line">    SQL_ERROR(<span class="number">501</span>, <span class="string">"数据库错误"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> code;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> String message;</span><br><span class="line"></span><br><span class="line">    ErrorCode(<span class="keyword">int</span> code, String message) &#123;</span><br><span class="line">        <span class="keyword">this</span>.code = code;</span><br><span class="line">        <span class="keyword">this</span>.message = message;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getCode</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> code;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getMessage</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> message;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<hr>
+<p><strong><em>上面有一点与众不同的是：</em></strong><br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">CharArrayWriter cw = <span class="keyword">new</span> CharArrayWriter(<span class="number">1024</span>);</span><br><span class="line">PrintWriter pw = <span class="keyword">new</span> PrintWriter(cw, <span class="keyword">true</span>);</span><br><span class="line">e.printStackTrace(pw);</span><br></pre></td></tr></table></figure></p>
+<p>通常大多数人都是随手直接<code>e.printStackTrace()</code>，这样写虽然没有什么问题，但是性能影响较大，<br>跟进Throwable-&gt;printStackTrace()方法发现<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Throwable</span> <span class="keyword">implements</span> <span class="title">Serializable</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">printStackTrace</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        printStackTrace(System.err);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">printStackTrace</span><span class="params">(PrintStream s)</span> </span>&#123;</span><br><span class="line">        printStackTrace(<span class="keyword">new</span> WrappedPrintStream(s));</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">printStackTrace</span><span class="params">(PrintStreamOrWriter s)</span> </span>&#123;</span><br><span class="line">        ...</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">synchronized</span> (s.lock()) &#123;</span><br><span class="line">            <span class="comment">//Print our stack trace</span></span><br><span class="line">            s.println(<span class="keyword">this</span>);</span><br><span class="line">            </span><br><span class="line">            StackTraceElement[] trace = getOurStackTrace();</span><br><span class="line">            <span class="keyword">for</span> (StackTraceElement traceElement : trace)</span><br><span class="line">                s.println(<span class="string">"\tat "</span> + traceElement);</span><br><span class="line">                </span><br><span class="line">            ...</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">WrappedPrintStream</span> <span class="keyword">extends</span> <span class="title">PrintStreamOrWriter</span> </span>&#123;</span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">final</span> PrintStream printStream;</span><br><span class="line">    </span><br><span class="line">        WrappedPrintStream(PrintStream printStream) &#123;</span><br><span class="line">            <span class="keyword">this</span>.printStream = printStream;</span><br><span class="line">        &#125;</span><br><span class="line">    </span><br><span class="line">        <span class="function">Object <span class="title">lock</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            <span class="keyword">return</span> printStream;</span><br><span class="line">        &#125;</span><br><span class="line">    </span><br><span class="line">        <span class="function"><span class="keyword">void</span> <span class="title">println</span><span class="params">(Object o)</span> </span>&#123;</span><br><span class="line">            printStream.println(o);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>可以看到直接<code>e.printStackTrace()</code>会打印到标准错误输出<code>System.err</code>，没办法保存异常堆栈信息以便后续处理且效率又低，<br>看上面代码可知<code>printStackTrace()</code>方法中有一个<code>synchronized(s.lock())</code>代码块，<br>直接使用<code>e.printStackTrace()</code>时<code>s.lock()</code>即为<code>System.err</code>，这样并发高时一次只能有一个线程打印，其他线程都阻塞了，<br>如果多个接口调用同一个工具类方法出错或者同时有多个请求调用同一个接口出错的情况下性能影响还是很大的。<br>有人会想为什么这里要用<code>synchronized</code>，我们假设不使用<code>synchronized</code>那就会导致多个线程同时一起打印，一会一行是a线程的，一会下一行可能就是b线程c线程的，<br>最后结果就是不同线程打印的日志相互穿插混在一起，如果日志没有打标签那就更没办法分析到底哪一行是哪个线程打印的，即使加了标签也还要过滤分组等一系列额外操作才能分开，<br>使用synchronized就能限制一次只有一个线程获取锁然后打印完日志到达锁边界释放锁，然后轮到别的线程继续打印，日志就不会相互穿插在一起。</p>
+<p>所以上面使用了这样的写法：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">CharArrayWriter cw = <span class="keyword">new</span> CharArrayWriter(<span class="number">1024</span>);</span><br><span class="line">PrintWriter pw = <span class="keyword">new</span> PrintWriter(cw, <span class="keyword">true</span>);</span><br><span class="line">e.printStackTrace(pw);</span><br></pre></td></tr></table></figure></p>
+<p>或者<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ByteArrayOutputStream bos = <span class="keyword">new</span> ByteArrayOutputStream(<span class="number">1024</span>);</span><br><span class="line">e.printStackTrace(<span class="keyword">new</span> PrintWriter(bos));</span><br></pre></td></tr></table></figure></p>
+<p>将异常堆栈信息高效写入到内存中的一个字节数组，然后转化为字符串提交给日志收集系统做进一步处理。</p>
+<hr>
+<p>最后就是关于异常的一点优化：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 配合全局异常捕获&#123;<span class="doctag">@link</span> ExceptionHandlerImpl&#125;</span></span><br><span class="line"><span class="comment"> * 可以在任意位置中断并返回统一的错误Response,</span></span><br><span class="line"><span class="comment"> * 避免错误状态码层层传递到controller后才能返回错误Response,</span></span><br><span class="line"><span class="comment"> * 同时不用记录出错堆栈信息,</span></span><br><span class="line"><span class="comment"> * 兼顾代码方便整洁与性能</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AbortException</span> <span class="keyword">extends</span> <span class="title">RuntimeException</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> code = ErrorCode.CODE_400;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">AbortException</span><span class="params">(String message)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(message, <span class="keyword">null</span>, <span class="keyword">false</span>, <span class="keyword">false</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">AbortException</span><span class="params">(<span class="keyword">int</span> code, String message)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(message, <span class="keyword">null</span>, <span class="keyword">false</span>, <span class="keyword">false</span>);</span><br><span class="line">        <span class="keyword">this</span>.code = code;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">AbortException</span><span class="params">(ErrorCode errorCode)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(errorCode.getMessage(), <span class="keyword">null</span>, <span class="keyword">false</span>, <span class="keyword">false</span>);</span><br><span class="line">        code = errorCode.getCode();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 此类仅为了在不同时机时中断程序,无需记录异常堆栈信息,</span></span><br><span class="line"><span class="comment">     * 为了提高性能直接覆盖父类&#123;<span class="doctag">@link</span> Throwable#fillInStackTrace()&#125;追踪堆栈信息方法</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Throwable <span class="title">fillInStackTrace</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="comment">//super.fillInStackTrace();     //不需要堆栈信息,无需调用父类方法填充堆栈信息</span></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getCode</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> code;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>从java1.7开始Throwable多了一个这样构造方法：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span>  message the detail message.</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> cause the cause.  (A &#123;<span class="doctag">@code</span> null&#125; value is permitted,and indicates that the cause is nonexistent or unknown.)</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> enableSuppression whether or not suppression is enabled or disabled</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> writableStackTrace whether or not the stack trace should be writable</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@since</span> 1.7</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="title">Throwable</span><span class="params">(String message, Throwable cause, <span class="keyword">boolean</span> enableSuppression, <span class="keyword">boolean</span> writableStackTrace)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (writableStackTrace) &#123;</span><br><span class="line">        fillInStackTrace();</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        stackTrace = <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    detailMessage = message;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">this</span>.cause = cause;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (!enableSuppression)</span><br><span class="line">        suppressedExceptions = <span class="keyword">null</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Fills in the execution stack trace. This method records within this</span></span><br><span class="line"><span class="comment"> * &#123;<span class="doctag">@code</span> Throwable&#125; object information about the current state of the stack frames for the current thread.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * If the stack trace of this &#123;<span class="doctag">@code</span> Throwable&#125; &#123;<span class="doctag">@linkplain</span></span></span><br><span class="line"><span class="comment"> * Throwable#Throwable(String, Throwable, boolean, boolean) is not writable&#125;, calling this method has no effect.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> Throwable <span class="title">fillInStackTrace</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (stackTrace != <span class="keyword">null</span> ||</span><br><span class="line">        backtrace != <span class="keyword">null</span> <span class="comment">/* Out of protocol state */</span> ) &#123;</span><br><span class="line">        fillInStackTrace(<span class="number">0</span>);</span><br><span class="line">        stackTrace = UNASSIGNED_STACK;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>通过构造方法控制是否记录异常堆栈信息或者干脆直接覆盖<code>fillInStackTrace()</code>方法，经过这样简单两步我们就得到一个非常轻量级异常。</p>
+<p>我们知道出现异常时，异常记录出错时堆栈信息也是很影响性能的，大部分情况我们需要知道出错原因就必须记录错误堆栈信息来分析，<br>但在一些特殊情况下我们已经知道原因，只想返回出错信息，不需要记录异常堆栈信息，上面这个轻量级异常就有很大用武之地了，<br>举一个很常见的场景，假如Controller层有一个接口通过Service调用了一个工具类，工具类会有好几种不同错误结果和正常结果，<br>我们可能会设置一个返回值，Service根据返回值生成不同结果返回给Controller，这样的话每次工具类多几种不同结果，Service也要相应改，<br>再假如很多个Service都调用了这个工具类，用这种方法就将是一个噩梦。</p>
+<p>这个时候用上面的轻量级异常配合统一异常捕获，那Controller层就不用再关心工具类会返回多少不同结果了，直接在工具类里面根据不同结果抛出异常，<br>最终通过ExceptionHandlerImpl直接返回错误信息给用户，当然这里只列举了一个普通简单场景，实际情况下用处跟方便性更大，具体好处只有等用到具体项目中才会有体会。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/spring/" rel="tag"># spring</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/12/02/SSH端口转发/" rel="next" title="SSH端口转发">
+                <i class="fa fa-chevron-left"></i> SSH端口转发
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/03/21/N个线程交替运行/" rel="prev" title="N个线程交替运行">
+                N个线程交替运行 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">X</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">9</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">X</span>
+
+  
+</div>
+
+<!-- 
+
+
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+ -->
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+
+  <!--  -->
+
+  <!-- 页面点击小红心 -->
+  <script type="text/javascript" src="/js/src/love.js"></script>
+
+</body>
+</html>

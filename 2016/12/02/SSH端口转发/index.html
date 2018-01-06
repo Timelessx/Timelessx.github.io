@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="tool,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="关于ssh端口转发科普类的相关文章已经很多了，需要科普基础入门的同学请先阅读其他文章后再读本文会有不一样的收获。看过铺天盖地相关文章，不是抄来抄去讲不清楚就是断章取义关键地方一笔带过，实在是浪费时间误导他人。后来发现这两篇文章值得一读https://en.wikibooks.org/wiki/OpenSSH/Cookbook/Tunnelshttps://blog.trackets.com/201">
+<meta name="keywords" content="tool">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SSH端口转发">
+<meta property="og:url" content="http://yoursite.com/2016/12/02/SSH端口转发/index.html">
+<meta property="og:site_name" content="Timelessx">
+<meta property="og:description" content="关于ssh端口转发科普类的相关文章已经很多了，需要科普基础入门的同学请先阅读其他文章后再读本文会有不一样的收获。看过铺天盖地相关文章，不是抄来抄去讲不清楚就是断章取义关键地方一笔带过，实在是浪费时间误导他人。后来发现这两篇文章值得一读https://en.wikibooks.org/wiki/OpenSSH/Cookbook/Tunnelshttps://blog.trackets.com/201">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2016-12-03T06:09:01.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="SSH端口转发">
+<meta name="twitter:description" content="关于ssh端口转发科普类的相关文章已经很多了，需要科普基础入门的同学请先阅读其他文章后再读本文会有不一样的收获。看过铺天盖地相关文章，不是抄来抄去讲不清楚就是断章取义关键地方一笔带过，实在是浪费时间误导他人。后来发现这两篇文章值得一读https://en.wikibooks.org/wiki/OpenSSH/Cookbook/Tunnelshttps://blog.trackets.com/201">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2016/12/02/SSH端口转发/">
+
+
+
+
+
+<script type="text/javascript">
+    (function () {
+        if ('') {
+            if (prompt('请输入文章密码') !== '') {
+                alert('您没有阅读权限');
+                if (history.length === 1) {
+                    window.location.href = '/';
+                } else {
+                    history.back();
+                }
+            }
+        }
+    })();
+</script>
+  <title>SSH端口转发 | Timelessx</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Timelessx</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2016/12/02/SSH端口转发/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="X">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Timelessx">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">SSH端口转发</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-12-02T21:17:22+08:00">
+                2016-12-02
+              </time>
+            
+
+            
+              <span class="post-meta-divider">|</span>
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">更新于&#58;</span>
+              
+              <time title="更新于" itemprop="dateModified" datetime="2016-12-03T14:09:01+08:00">
+                2016-12-03
+              </time>
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>关于ssh端口转发科普类的相关文章已经很多了，需要科普基础入门的同学请先阅读其他文章后再读本文会有不一样的收获。<br>看过铺天盖地相关文章，不是抄来抄去讲不清楚就是断章取义关键地方一笔带过，实在是浪费时间误导他人。<br>后来发现这两篇文章值得一读<br><strong><a href="https://en.wikibooks.org/wiki/OpenSSH/Cookbook/Tunnels" target="_blank" rel="noopener">https://en.wikibooks.org/wiki/OpenSSH/Cookbook/Tunnels</a></strong><br><strong><a href="https://blog.trackets.com/2014/05/17/ssh-tunnel-local-and-remote-port-forwarding-explained-with-examples.html" target="_blank" rel="noopener">https://blog.trackets.com/2014/05/17/ssh-tunnel-local-and-remote-port-forwarding-explained-with-examples.html</a></strong><br>英语还过得去的话建议直接看ssh帮助文档，关于端口转发部分文档描述如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line">本地端口转发</span><br><span class="line">-L [bind_address:]port:host:hostport</span><br><span class="line">-L [bind_address:]port:remote_socket</span><br><span class="line">-L local_socket:host:hostport</span><br><span class="line">-L local_socket:remote_socket</span><br><span class="line"></span><br><span class="line">Specifies that connections to the given TCP port or Unix socket on the local (client) host are to be forwarded</span><br><span class="line">to the given host and port, or Unix socket, on the remote side.  This works by allocating a socket to listen to</span><br><span class="line">either a TCP port on the local side, optionally bound to the specified bind_address, or to a Unix socket.</span><br><span class="line">Whenever a connection is made to the local port or socket, the connection is forwarded over the secure channel,</span><br><span class="line">and a connection is made to either host port hostport, or the Unix socket remote_socket, from the remote machine.</span><br><span class="line"></span><br><span class="line">Port forwardings can also be specified in the configuration file.  Only the superuser can forward privileged</span><br><span class="line">ports.  IPv6 addresses can be specified by enclosing the address in square brackets.</span><br><span class="line"></span><br><span class="line">By default, the local port is bound in accordance with the GatewayPorts setting.  However, an explicit</span><br><span class="line">bind_address may be used to bind the connection to a specific address.  The bind_address of “localhost” indi‐</span><br><span class="line">cates that the listening port be bound for local use only, while an empty address or ‘*’ indicates that the</span><br><span class="line">port should be available from all interfaces.</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">动态端口转发</span><br><span class="line">-D [bind_address:]port</span><br><span class="line"></span><br><span class="line">Specifies a local “dynamic” application-level port forwarding.  This works by allocating a socket to listen to</span><br><span class="line">port on the local side, optionally bound to the specified bind_address.  Whenever a connection is made to this</span><br><span class="line">port, the connection is forwarded over the secure channel, and the application protocol is then used to deter‐</span><br><span class="line">mine where to connect to from the remote machine.  Currently the SOCKS4 and SOCKS5 protocols are supported, and</span><br><span class="line">ssh will act as a SOCKS server.  Only root can forward privileged ports.  Dynamic port forwardings can also be</span><br><span class="line">specified in the configuration file.</span><br><span class="line"></span><br><span class="line">IPv6 addresses can be specified by enclosing the address in square brackets.  Only the superuser can forward</span><br><span class="line">privileged ports.  By default, the local port is bound in accordance with the GatewayPorts setting.  However,</span><br><span class="line">an explicit bind_address may be used to bind the connection to a specific address.  The bind_address of</span><br><span class="line">“localhost” indicates that the listening port be bound for local use only, while an empty address or ‘*’ indi‐</span><br><span class="line">cates that the port should be available from all interfaces.</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">远程端口转发</span><br><span class="line">-R [bind_address:]port:host:hostport</span><br><span class="line">-R [bind_address:]port:local_socket</span><br><span class="line">-R remote_socket:host:hostport</span><br><span class="line">-R remote_socket:local_socket</span><br><span class="line">-R [bind_address:]port</span><br><span class="line"></span><br><span class="line">Specifies that connections to the given TCP port or Unix socket on the remote (server) host are to be forwarded</span><br><span class="line">to the local side.</span><br><span class="line"></span><br><span class="line">This works by allocating a socket to listen to either a TCP port or to a Unix socket on the remote side.  When‐</span><br><span class="line">ever a connection is made to this port or Unix socket, the connection is forwarded over the secure channel, and</span><br><span class="line">a connection is made from the local machine to either an explicit destination specified by host port hostport,</span><br><span class="line">or local_socket, or, if no explicit destination was specified, ssh will act as a SOCKS 4/5 proxy and forward</span><br><span class="line">connections to the destinations requested by the remote SOCKS client.</span><br><span class="line"></span><br><span class="line">Port forwardings can also be specified in the configuration file.  Privileged ports can be forwarded only when</span><br><span class="line">logging in as root on the remote machine.  IPv6 addresses can be specified by enclosing the address in square brackets.</span><br><span class="line"></span><br><span class="line">By default, TCP listening sockets on the server will be bound to the loopback interface only.  This may be</span><br><span class="line">overridden by specifying a bind_address.  An empty bind_address, or the address ‘*’, indicates that the remote</span><br><span class="line">socket should listen on all interfaces.  Specifying a remote bind_address will only succeed if the server&apos;s</span><br><span class="line">GatewayPorts option is enabled (see sshd_config(5)).</span><br><span class="line"></span><br><span class="line">If the port argument is ‘0’, the listen port will be dynamically allocated on the server and reported to the</span><br><span class="line">client at run time.  When used together with -O forward the allocated port will be printed to the standard out‐put.</span><br></pre></td></tr></table></figure></p>
+<p>可以看到新版ssh不光支持端口转发还支持socket转发，当然socket转发这不是本文的重点，有兴趣的还可以了解一下socat。<br>使用ssh端口转发服务器sshd配置文件AllowTcpForwarding需设置为yes，ssh目前支持三种模式端口转发：</p>
+<p><strong>本地端口转发</strong></p>
+<p>本地端口转发作用是将本地端口连接转发到远程服务器，常用来连接远程服务器不能直接访问的端口。</p>
+<p>最常见的将本地3306端口转发至远程3306端口<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh -vN -L localhost:3306:localhost:3306 user@server</span><br></pre></td></tr></table></figure></p>
+<p>再复杂一点，整个后台只有一台网关服务器对外开放，其他服务器全部处于一个跟网关服务器在同一局域网的环境下，不对外开放无法直接连接，只能通过网关服务器连接，在网关服务器同一局域网下有一台mysql服务器，局域网ip为192.168.10.6,正常情况下我们要连接到这台mysql服务器要先登录到网关服务器，然后再在网关服务器上连接数据库，<br>那有没有办法可以直接连上内网的那台mysql服务器呢，根据上面ssh帮助文档<code>-L [bind_address:]port:host:hostport</code>，可以运行以下命令：<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh -vN -L localhost:3306:192.168.10.6:3306 user@gateway</span><br></pre></td></tr></table></figure></p>
+<p><code>-L [bind_address:]port:host:hostport</code>可以看到这里的bind_address是可选的，通常情况下很多人都是直接省略掉bind_address，那么命令就简化为<br><code>ssh -vN -L 3306:192.168.10.6:3306 user@gateway</code>，bind_address为空或者为*这也就意味着跟你处于同一局域网或者可以访问到你电脑的人也可以连接你这个端口进而连接上数据库。<br>有人会困惑<code>ssh -vN -L localhost:3306:192.168.10.6:3306 user@gateway</code>这里的host值192.168.10.6，这里的192.168.10.6是站在user@gateway这台服务器角度上来看的，并不是站在用户本地角度来说的。<br>运行上面命令后连接本地的3306端口，会通过ssh隧道传到gateway服务器，gateway服务器又将连接传到192.168.10.6的3306端口，<br>只要访问本地3306端口就能访问到在网关后面的局域网mysql服务器。</p>
+<p>再进一步更麻烦的环境，在上面基础上，为了保证安全，网关服务器的ssh也不允许直接连接，需要先通过一台跳板机来访问，连接跳板机需要动态验证码或者GoogleAuthenticator，这种情况下还想直接连接到那台mysql服务器该怎么办呢，正常情况下要先登录跳板机，再从跳板机登录到网关服务器，每次连接两下显然太麻烦，也有很多文章讲穿越跳板机一步直接连接的方法，<br>都是借助<code>ProxyCommand ssh -W %h:%p jump</code>或<code>ssh -o ProxyCommand=&quot;ssh -W %h:%p jump&quot; gateway</code>,这样虽然可以，但是有一个很大限制就是当跳板机跟网关服务器上ssh用户名、密钥、端口不一样时就不能用了，<br>好在新版本的ssh提供了一个ProxyJump选项，比都是借助ProxyCommand更加灵活，用法为:<code>ssh -J a@jump b@gateway</code>或<code>ssh -o ProxyJump=&quot;a@jump:2333&quot; gateway</code>,跳板机也可以指定多个。<br>有了ProxyJump上面场景就好解决，直接运行<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh -vN -J user@jump -L localhost:3306:192.168.10.6:3306 user@gateway</span><br></pre></td></tr></table></figure></p>
+<p><strong>动态端口转发</strong></p>
+<p>动态端口转发通常用来做socks代理，用法最简单：<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh -vN -D 1080 server</span><br></pre></td></tr></table></figure></p>
+<p>假如server为一台香港或国外服务器，在你本地电脑上运行上面命令，然后chrome设置启动参数<code>--proxy-server=&quot;socks5://127.0.0.1:1080&quot;</code>给chrome设置本地socks代理服务器就能直接访问google查询资料，也正因如此ssh连接经常受到干扰不稳定时快时慢。<br>本来是不想写这段的，因为博客很容易因此被屏蔽、被dns污染，但用google能搜索到一些质量更高的文章，设置ssh代理自己用就很方便。</p>
+<p><strong>远程端口转发</strong></p>
+<p>远程端口转发通常大家叫反向端口转发，作用是将远程端口连接转发到本地，通常用来做内网穿透，其他内网穿透工具有frp、ngrok之类的。</p>
+<p>比如说你想随时远程控制自己的电脑，但通常情况下普通个人宽带是没有固定ip的，端口也不能直接访问需要在路由器上做端口映射，反正就是各种限制，想让自己的ssh或vnc端口可以直接被访问到就需要做内网穿透，方案有很多，最方便安全的莫过于ssh了，但ssh只支持tcp不支持udp转发，这是唯一不便的地方。</p>
+<p>要想将你电脑的vnc、远程桌面映射到公网可以在你电脑的上直接运行：<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh -vN -R 6666:localhost:5900 user@server</span><br></pre></td></tr></table></figure></p>
+<p>其中server是一台有公网固定ip或域名可以被直接访问到的服务器，这样当你直接访问server的6666端口时连接就被server的ssh转发到你电脑的5900端口，也就意味着你可以直接通过vnc连接server:6666就能连接到你的电脑。</p>
+<p>服务器sshd配置文件中GatewayPorts选项会影响端口绑定地址，配置不同值会影响端口访问，先看下说明文档：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">GatewayPorts</span><br><span class="line">     Specifies whether remote hosts are allowed to connect to ports forwarded for the client.  By default, sshd(8) binds remote port</span><br><span class="line">     forwardings to the loopback address.  This prevents other remote hosts from connecting to forwarded ports.  GatewayPorts can be</span><br><span class="line">     used to specify that sshd should allow remote port forwardings to bind to non-loopback addresses, thus allowing other hosts to</span><br><span class="line">     connect.  The argument may be no to force remote port forwardings to be available to the local host only, yes to force remote</span><br><span class="line">     port forwardings to bind to the wildcard address, or clientspecified to allow the client to select the address to which the for‐</span><br><span class="line">     warding is bound.  The default is no.</span><br></pre></td></tr></table></figure></p>
+<p>也就是说默认情况下GatewayPorts为no，将只监听远程服务器本地端口访问，不接受其他机器访问，表象就是你访问不到远程服务器转发端口，这时你会以为转发失败，实际上看ssh的debug日志可以发现端口转发成功，只不过端口监听的是loopback地址其他机器无法直接访问，要想直接访问有两个办法：<br>1、服务器sshd配置文件中GatewayPorts设置为yes或clientspecified；<br>2、用上一节的本地端口转发办法将本地端口转发到远程端口；</p>
+<p><code>ssh -vN -R 6666:localhost:5900 user@server</code>这里也不仅限于localhost，为localhost时代表你的电脑，也可以为其他跟你在统一局域网下的其他电脑，比如现在有一台跟你电脑在同一局域网下<br>ip为192.168.2.20的你朋友的电脑，你想远程访问到这台电脑的3389端口，可以在你电脑上运行(注意是在你电脑上，不是你朋友电脑，如果是在你朋友电脑上的话直接运行上面介绍的命令就够了)：<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh -vN -R 6666:192.168.2.20:3389 user@server</span><br></pre></td></tr></table></figure></p>
+<p>这样当你访问server的6666端口时连接被转发到你的电脑上，你的电脑又将连接传到192.168.2.20:3389，直接连接server的6666端口就能连接上你朋友电脑的3389远程桌面。</p>
+<p>再举一个更常见的例子，前端在接微信公众号、扫码授权登录等很多其它场景时需要设置一个回调地址，这个回调地址必须是微信能直接访问到的，一般都设置为测试环境服务器地址，但这样有一个不方便的地方，<br>每次修改都要上传到测试环境才能看到效果，不方便调试又麻烦，有没有办法让前端能直接在他本地调试呢，答案是肯定的，假设那个做前端的同事电脑ip为192.168.6.110，在你电脑上可以直接访问到他电脑，<br>那么你可以在你电脑上运行：<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh -vN -R 8080:192.168.2.20:80 user@devserver</span><br></pre></td></tr></table></figure></p>
+<p>然后在上面设置回调地址时直接设置devserver:8080，这样当访问测试环境服务器devserver:8080时就能直接访问到你前端同事的电脑。</p>
+<p>内网穿透由于受到网络环境影响及其它不可描述的干扰因素，要想保证可靠稳定就必须采取一些额外措施来保证ssh隧道可靠性，google搜索reliable ssh tunnel找到一系列文章有一些方案，比如使用autossh和设置心跳保活，<br>这些在一定程度上提高了稳定性但还远远不够，离稳定可靠还有不小距离。</p>
+<p>通过找到的方案并经过一些尝试，就有了一个下面可以达到98%稳定可靠的办法，想要达到100%可靠估计只能靠vpn了。<br>在讲办法之前先介绍一点ssh技巧，借助ssh的config文件我们可以简化很多操作提高使用效率，先来看我的ssh配置文件:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line">Host *</span><br><span class="line">    ControlMaster auto</span><br><span class="line">    ControlPath /dev/shm/session_%r@%h:%p</span><br><span class="line">    ControlPersist 8h</span><br><span class="line">    ServerAliveInterval 200</span><br><span class="line">    ServerAliveCountMax 6</span><br><span class="line">    Compression yes</span><br><span class="line">    GSSAPIAuthentication no</span><br><span class="line">    PreferredAuthentications publickey</span><br><span class="line">    </span><br><span class="line">Host jump</span><br><span class="line">    HostName xxx</span><br><span class="line">    User xxx</span><br><span class="line">    Port xxx</span><br><span class="line">    IdentityFile ~/.ssh/jump</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Host dev</span><br><span class="line">    HostName xxx</span><br><span class="line">    User xxx</span><br><span class="line">    Port xxx</span><br><span class="line">    IdentityFile ~/.ssh/dev</span><br><span class="line">    ProxyJump jump</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Host ali</span><br><span class="line">    HostName 47.75.xx.xx</span><br><span class="line">    User xxx</span><br><span class="line">    Port 443</span><br><span class="line">    IdentityFile ~/.ssh/ali</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Host github*</span><br><span class="line">    HostName github.com</span><br><span class="line">    User git</span><br><span class="line">    IdentityFile ~/.ssh/git</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Host tunnel</span><br><span class="line">    ControlMaster no</span><br><span class="line">    HostName xxx</span><br><span class="line">    User xxx</span><br><span class="line">    Port 443</span><br><span class="line">    IdentityFile ~/.ssh/tunnel</span><br><span class="line">    IdentitiesOnly yes</span><br><span class="line">    ExitOnForwardFailure yes</span><br><span class="line">    BatchMode yes</span><br><span class="line">    ConnectTimeout 20</span><br><span class="line">    ConnectionAttempts 3</span><br><span class="line">    ServerAliveInterval 200</span><br><span class="line">    ServerAliveCountMax 2</span><br><span class="line">    StrictHostKeyChecking no</span><br><span class="line">    #RemoteForward 127.0.0.1:2333 127.0.0.1:233</span><br><span class="line">    #RemoteForward 127.0.0.1:5900 127.0.0.1:5900</span><br><span class="line">    #LocalForward 127.0.0.1:3306 127.0.0.1:3306</span><br></pre></td></tr></table></figure></p>
+<p>至于上述配置文件每一项具体意思不在本文讨论范围内，还有更多选项可以通过man ssh_config查看，我只讲几个关键的地方，设置ServerAliveInterval、ServerAliveCountMax这些常见保活手段就不多说，<br>这里tunnel部分最主要的是增加了一个配置选项<code>ExitOnForwardFailure</code>，设置当ssh端口转发失败时退出再结合重连脚本就能进一步增强ssh隧道稳定性。</p>
+<p>对于Linux系统，可以创建一个服务：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=SSHTunnel Service</span><br><span class="line">After=network.target</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">User=nobody</span><br><span class="line">ExecStart=/usr/bin/ssh -F /var/ssh_config -4NT -R 5900:localhost:5900 -R 2333:localhost:233 tunnel</span><br><span class="line">Restart=always</span><br><span class="line">RestartSec=20</span><br><span class="line"></span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure></p>
+<p>或者使用一个这样的脚本：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/bin/bash -x</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> ((;;)) &#123;</span><br><span class="line">    ssh -4vNT -R 5900:localhost:5900 -R 2333:localhost:233 tunnel;</span><br><span class="line">    sleep 20;</span><br><span class="line">    </span><br><span class="line">    ssh -4vNT -R 6666:localhost:5900 -R 8888:localhost:233 tunnel;</span><br><span class="line">    sleep 20;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>把ssh连接放在一个无限循环中保证断开后会重连，同时设置两组端口，至于原因后面再讲，最关键的还是<code>ExitOnForwardFailure yes</code>设置了这个选项才能保证端口转发一定成功否则就<br>不停重试，用autossh也可以重连但是有时候虽然ssh重新连接成功但是端口转发却失败所以需要通过ExitOnForwardFailure控制重连，所以只用autossh是无法保证ssh隧道稳定的，<br>试验过多次发现有时候ssh重连时由于远程端口的连接还未及时释放，此时ssh重连后无法再次监听同一端口因为端口还被占用着，虽然ssh重连成功但端口转发失败ssh隧道无法使用，这也是单使用autossh<br>无法解决隧道稳定的问题，好在ssh配置灵活提供了<code>ExitOnForwardFailure</code>供用户选择，转发失败就退出再重连这样就能保证稳定。<br>这里出现问题的主要原因是ssh重连时无法监听之前连接还占用着的端口，因此这里设置了两组端口换着使用从一定程度上减少端口冲突使端口有充分时间释放，这是一种选择，但这也不能从根本上解决问题，<br>要想从根本上解决问题需要kill掉之前连接，最简单无脑的办法就是在上面脚本中加上一句清除之前连接语句：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/bin/bash -x</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> ((;;)) &#123;</span><br><span class="line">    ssh -4vN -R 5900:localhost:5900 -R 2333:localhost:233 tunnel;</span><br><span class="line">    ssh tunnel pkill ssh;</span><br><span class="line">    sleep 20;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这样简单粗暴干净，但是缺点是会kill掉以当前用户身份登录的所有ssh连接，如果是你多个ssh连接使用同一个账户的话都会被kill掉，不过一般如果做端口转发的话会单独分配一个最低权限不能登录shell的用户就不考虑这种情况。</p>
+<p>对于使用Windows系统的，可以用cygwin或MinGW里面的ssh，然后创建一个批处理脚本D:\Tunnel.bat：<br><figure class="highlight bat"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">@<span class="built_in">echo</span> off</span><br><span class="line"></span><br><span class="line">:loop</span><br><span class="line"></span><br><span class="line"><span class="built_in">echo</span> -------------------------------<span class="variable">%date%</span><span class="variable">%time%</span>-------------------------------- &gt;&gt;  D:\tunnel.log</span><br><span class="line"></span><br><span class="line">ssh.exe -F D:\config -i D:\tunnel -<span class="number">4</span>vNT -R <span class="number">8888</span>:localhost:<span class="number">5900</span> -R <span class="number">6666</span>:localhost:<span class="number">3389</span> tunnel &gt;&gt; D:\tunnel.log <span class="number">2</span>&gt;&amp;<span class="number">1</span></span><br><span class="line"></span><br><span class="line">choice /t <span class="number">10</span> /d y /n /m "<span class="number">10</span>s后重试"</span><br><span class="line"></span><br><span class="line"><span class="built_in">echo</span> -------------------------------<span class="variable">%date%</span><span class="variable">%time%</span>-------------------------------- &gt;&gt;  D:\tunnel.log</span><br><span class="line"></span><br><span class="line">ssh.exe -F D:\config -i D:\tunnel -<span class="number">4</span>vNT -R <span class="number">3389</span>:localhost:<span class="number">3389</span> -R <span class="number">5900</span>:localhost:<span class="number">5900</span> tunnel &gt;&gt; D:\tunnel.log <span class="number">2</span>&gt;&amp;<span class="number">1</span></span><br><span class="line"></span><br><span class="line">choice /t <span class="number">20</span> /d y /n /m "<span class="number">20</span>s后重试"</span><br><span class="line"></span><br><span class="line"><span class="keyword">goto</span> loop</span><br></pre></td></tr></table></figure></p>
+<p>再写一个守护任务脚本daemon.bat：<br><figure class="highlight bat"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">@<span class="built_in">echo</span> off</span><br><span class="line"><span class="built_in">echo</span> -------------------------------<span class="variable">%date%</span><span class="variable">%time%</span> 守护任务执行-------------------------------- &gt;&gt;  D:\daemon.log</span><br><span class="line">wmic process where name='<span class="built_in">cmd</span>.exe' get commandline | <span class="built_in">findstr</span> /i "tunnel" || <span class="built_in">start</span> /min D:\Tunnel.bat</span><br></pre></td></tr></table></figure></p>
+<p>然后创建一个任务计划<code>schtasks /create /ru SYSTEM /sc onstart /tn &quot;SSHTunnel&quot; /tr &quot;D:\daemon.bat&quot;</code>,还可以再设置一个触发器每隔15分钟运行检测一次增强ssh隧道稳定。</p>
+<p>写在最后，附上我个人远程控制家里电脑的办法，首先我有一个可以刷OpenWrt或PandoraBox的路由器，有了这个路由器一切都好办了，路由器上直接运行上面的脚本就可以把路由器的ssh端口穿透出去，路由器唤醒电脑的话可以用主板自带的Wake on Lan功能，<br>当然还有另外一个办法，电脑可以设置成键盘鼠标开机，在家里放个小手机调成震动模式，要想远程开机直接打电话给手机，手机震动触发键盘鼠标开机。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/tool/" rel="tag"># tool</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/05/02/IDEA重置试用时间/" rel="next" title="IDEA重置试用时间">
+                <i class="fa fa-chevron-left"></i> IDEA重置试用时间
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/03/02/Spring统一异常处理/" rel="prev" title="Spring统一异常处理">
+                Spring统一异常处理 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">X</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">9</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">X</span>
+
+  
+</div>
+
+<!-- 
+
+
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+ -->
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+
+  <!--  -->
+
+  <!-- 页面点击小红心 -->
+  <script type="text/javascript" src="/js/src/love.js"></script>
+
+</body>
+</html>
